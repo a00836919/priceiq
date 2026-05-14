@@ -1,0 +1,46 @@
+# Datos crudos del cliente — privados, NO compartir
+tablas_merksyst_parquet/
+
+# Datos derivados grandes (>5MB) y modelos entrenados — se regeneran corriendo los scripts
+data/panel_diario.parquet
+data/ventas_diarias.parquet
+data/lgbm_predictions.parquet
+data/backtest_results.parquet
+data/predictions_*.parquet
+data/holdout_*.parquet
+data/cross_elasticities*.parquet
+data/embedding_neighbors.parquet
+data/costos_eventos.parquet
+data/promo_events.parquet
+data/promo_canibalization.parquet
+data/promo_model_validation.parquet
+data/local_sku_metadata.parquet
+data/conformal_quantiles.parquet
+
+# Modelos binarios — pesados, regenerables
+models/
+
+# CatBoost training logs
+catboost_info/
+
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.ipynb_checkpoints/
+.pytest_cache/
+
+# Entornos virtuales
+.venv/
+venv/
+env/
+
+# IDEs
+.vscode/
+.idea/
+
+# Streamlit
+.streamlit/secrets.toml
