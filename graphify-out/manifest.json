@@ -1,0 +1,117 @@
+{
+  "/Users/iguacio/Documents/priceIQ/item2vec.py": {
+    "mtime": 1778543827.2008636,
+    "ast_hash": "35e531dd40d8bb6eabaebb9d4246cecf",
+    "semantic_hash": "35e531dd40d8bb6eabaebb9d4246cecf"
+  },
+  "/Users/iguacio/Documents/priceIQ/conformal_adaptive.py": {
+    "mtime": 1778714709.0649426,
+    "ast_hash": "1677b27d5e13a0b3570a523e3a182e3d",
+    "semantic_hash": "1677b27d5e13a0b3570a523e3a182e3d"
+  },
+  "/Users/iguacio/Documents/priceIQ/backtest_quasi.py": {
+    "mtime": 1778769571.1553602,
+    "ast_hash": "dff832fc9a0fe65c03c2291fc4478600",
+    "semantic_hash": "dff832fc9a0fe65c03c2291fc4478600"
+  },
+  "/Users/iguacio/Documents/priceIQ/baseline_elasticity.py": {
+    "mtime": 1778109657.1280897,
+    "ast_hash": "31a6372512da6eb091d3379f39134032",
+    "semantic_hash": "31a6372512da6eb091d3379f39134032"
+  },
+  "/Users/iguacio/Documents/priceIQ/lgbm_demand.py": {
+    "mtime": 1778543952.5765066,
+    "ast_hash": "0268d43abfbb83b72d96c3dd084bd863",
+    "semantic_hash": "0268d43abfbb83b72d96c3dd084bd863"
+  },
+  "/Users/iguacio/Documents/priceIQ/elasticity_v3_hierarchical.py": {
+    "mtime": 1778194137.2651358,
+    "ast_hash": "03959fe5bf150e90075504c06f53e153",
+    "semantic_hash": "03959fe5bf150e90075504c06f53e153"
+  },
+  "/Users/iguacio/Documents/priceIQ/elasticity_v2.py": {
+    "mtime": 1778191890.7503242,
+    "ast_hash": "195e5f5c5ea344409c517ba4aa770cd2",
+    "semantic_hash": "195e5f5c5ea344409c517ba4aa770cd2"
+  },
+  "/Users/iguacio/Documents/priceIQ/dashboard.py": {
+    "mtime": 1778771321.1160357,
+    "ast_hash": "77a0d34c1a7ba8c8dc2bb9a21d6a8e27",
+    "semantic_hash": "77a0d34c1a7ba8c8dc2bb9a21d6a8e27"
+  },
+  "/Users/iguacio/Documents/priceIQ/cross_elasticity_v2.py": {
+    "mtime": 1778212025.9427047,
+    "ast_hash": "f51f5154b6bcd4f98fa57ab5caa46285",
+    "semantic_hash": "f51f5154b6bcd4f98fa57ab5caa46285"
+  },
+  "/Users/iguacio/Documents/priceIQ/per_sku_finetune.py": {
+    "mtime": 1778714649.0036964,
+    "ast_hash": "f708aa935af2b01fe2b84b93a85e6a0e",
+    "semantic_hash": "f708aa935af2b01fe2b84b93a85e6a0e"
+  },
+  "/Users/iguacio/Documents/priceIQ/build_baskets.py": {
+    "mtime": 1778210171.8650792,
+    "ast_hash": "5532c365a048a019dba0a26adabaddba",
+    "semantic_hash": "5532c365a048a019dba0a26adabaddba"
+  },
+  "/Users/iguacio/Documents/priceIQ/promo_descriptive.py": {
+    "mtime": 1778212599.3474524,
+    "ast_hash": "b979afd1ebdb35a5aada049c11d0a411",
+    "semantic_hash": "b979afd1ebdb35a5aada049c11d0a411"
+  },
+  "/Users/iguacio/Documents/priceIQ/model_comparison.py": {
+    "mtime": 1778544711.17225,
+    "ast_hash": "d7380b35c5677d650aeb8efb195b8a73",
+    "semantic_hash": "d7380b35c5677d650aeb8efb195b8a73"
+  },
+  "/Users/iguacio/Documents/priceIQ/build_dataset.py": {
+    "mtime": 1778107966.079891,
+    "ast_hash": "859684734929b84a8df188378dd3fd7f",
+    "semantic_hash": "859684734929b84a8df188378dd3fd7f"
+  },
+  "/Users/iguacio/Documents/priceIQ/cross_elasticity.py": {
+    "mtime": 1778210737.129442,
+    "ast_hash": "39f189b790c082355343ff705b381d9d",
+    "semantic_hash": "39f189b790c082355343ff705b381d9d"
+  },
+  "/Users/iguacio/Documents/priceIQ/backtest.py": {
+    "mtime": 1778767577.3129535,
+    "ast_hash": "374ddd5f9a53621fdad423a14bac01ba",
+    "semantic_hash": "374ddd5f9a53621fdad423a14bac01ba"
+  },
+  "/Users/iguacio/Documents/priceIQ/recommender.py": {
+    "mtime": 1778769646.7668583,
+    "ast_hash": "2fb3fdb49b6b4256e6f81263255f44df",
+    "semantic_hash": "2fb3fdb49b6b4256e6f81263255f44df"
+  },
+  "/Users/iguacio/Documents/priceIQ/.claude/settings.local.json": {
+    "mtime": 1779466779.5358098,
+    "ast_hash": "7cbf368b22a858be19992176732b2f32",
+    "semantic_hash": "7cbf368b22a858be19992176732b2f32"
+  },
+  "/Users/iguacio/Documents/priceIQ/requirements.txt": {
+    "mtime": 1778771530.2518823,
+    "ast_hash": "3980bfba66979dd0a59f93004da1efc7",
+    "semantic_hash": "3980bfba66979dd0a59f93004da1efc7"
+  },
+  "/Users/iguacio/Documents/priceIQ/DOCUMENTACION.md": {
+    "mtime": 1778872609.9579606,
+    "ast_hash": "f597101b5358d734ee0f4c2c6aeec852",
+    "semantic_hash": "f597101b5358d734ee0f4c2c6aeec852"
+  },
+  "/Users/iguacio/Documents/priceIQ/README.md": {
+    "mtime": 1778771564.7758596,
+    "ast_hash": "9d0ffacbb8c41fb8eb98b0dfc17031f3",
+    "semantic_hash": "9d0ffacbb8c41fb8eb98b0dfc17031f3"
+  },
+  "/Users/iguacio/Documents/priceIQ/eda_precio_demanda.png": {
+    "mtime": 1778104751.7294393,
+    "ast_hash": "c15f248b5304bd279243e6aeb0e65ed1",
+    "semantic_hash": "c15f248b5304bd279243e6aeb0e65ed1"
+  },
+  "/Users/iguacio/Documents/priceIQ/baseline_diagnostico.png": {
+    "mtime": 1778109775.7254224,
+    "ast_hash": "803a309cbe53b651fbae074d3fbdebac",
+    "semantic_hash": "803a309cbe53b651fbae074d3fbdebac"
+  }
+}
