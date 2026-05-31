@@ -12,3 +12,8 @@ matplotlib>=3.7
 altair>=5.0
 streamlit>=1.30
 tqdm>=4.65
+# Backend FastAPI
+fastapi>=0.110
+uvicorn[standard]>=0.29
+# Telemetría Azure (opcional, solo se usa si APPLICATIONINSIGHTS_CONNECTION_STRING está set)
+azure-monitor-opentelemetry>=1.6

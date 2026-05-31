@@ -78,6 +78,23 @@ with st.sidebar:
     )
 
 # ---------------------------------------------------------------------------
+# Validación de input: ¿está el nuevo costo fuera del rango histórico?
+# ---------------------------------------------------------------------------
+cost_check = R.validate_cost_input(sku_label, new_cost)
+if cost_check["severity"] == "extreme":
+    st.error(
+        f"🚨 **Costo fuera del rango histórico completo** — {cost_check['message']} "
+        f"El modelo nunca vio costos así para este SKU; la recomendación es una "
+        f"extrapolación. Si el cambio es real, considera escalonar el ajuste o pedir "
+        f"validación humana antes de aplicar."
+    )
+elif cost_check["severity"] == "warning":
+    st.warning(
+        f"⚠️ **Costo inusual** — {cost_check['message']} La recomendación es válida "
+        f"pero su credibilidad será menor."
+    )
+
+# ---------------------------------------------------------------------------
 # SECCIÓN 1: Precio recomendado
 # ---------------------------------------------------------------------------
 st.header("2️⃣ Precio recomendado")
@@ -85,6 +102,13 @@ rec  = R.recommend_price(sku_label, new_cost, objetivo=objetivo, conservatism=co
 rng  = R.recommended_range(rec, threshold=0.95, min_credibilidad=0.6)
 card = R.confidence_card(sku_label, rec)
 curve = rec["curva"]
+
+# Subtítulo: qué modelo se está usando (transparencia ensemble por familia)
+modelo_emoji = {"LightGBM": "🟦", "XGBoost": "🟧", "CatBoost": "🟪"}.get(rec["modelo_usado"], "⚙️")
+st.caption(
+    f"{modelo_emoji} **Modelo usado para este SKU:** {rec['modelo_usado']} "
+    f"(elegido automáticamente para la familia *{state['fam']}* según el backtest)."
+)
 
 # Tarjeta de confianza primero — para enmarcar todo
 # Usamos colores con buen contraste en MODO CLARO y OSCURO (texto siempre oscuro).

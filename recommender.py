@@ -10,18 +10,29 @@ Componentes:
 Usado tanto por Streamlit como por scripts.
 """
 from __future__ import annotations
+import os
 from pathlib import Path
 from functools import lru_cache
 import numpy as np
 import pandas as pd
 import lightgbm as lgb
+try:
+    import xgboost as xgb
+except ImportError:
+    xgb = None
+try:
+    from catboost import CatBoostRegressor
+except ImportError:
+    CatBoostRegressor = None
 from sklearn.preprocessing import LabelEncoder
 from gensim.models import KeyedVectors
 import warnings
 warnings.filterwarnings("ignore")
 
-DATA = Path("data")
-MODELS = Path("models")
+# Rutas configurables vía env vars — permite mountar blob storage en producción.
+# En local sin env vars, mantiene comportamiento original.
+DATA = Path(os.environ.get("PRICEIQ_DATA_DIR", "data"))
+MODELS = Path(os.environ.get("PRICEIQ_MODELS_DIR", "models"))
 LOCAL_DIR = MODELS / "local_lgbm"
 
 # ---------------------------------------------------------------------------
@@ -70,12 +81,42 @@ def _load_all():
     features_cat = ["lin_le","fam_le","marca_le","tipo_articulo_le","cve_pro_le","proveedor_ult_le"]
     features = features_num + features_cat + emb_cols
 
-    # Modelos
+    # Modelos LightGBM (siempre cargados; son el default)
     models = {
         "q10": lgb.Booster(model_file=str(MODELS / "lgbm_q10.txt")),
         "q50": lgb.Booster(model_file=str(MODELS / "lgbm_q50.txt")),
         "q90": lgb.Booster(model_file=str(MODELS / "lgbm_q90.txt")),
     }
+    # XGBoost (para familias donde gana)
+    models_xgb = {}
+    if xgb is not None:
+        try:
+            for q in [10, 50, 90]:
+                m = xgb.XGBRegressor()
+                m.load_model(str(MODELS / f"xgb_q{q:02d}.json"))
+                models_xgb[f"q{q}"] = m
+        except Exception:
+            models_xgb = {}
+    # CatBoost
+    models_cat = {}
+    if CatBoostRegressor is not None:
+        try:
+            for q in [10, 50, 90]:
+                m = CatBoostRegressor()
+                m.load_model(str(MODELS / f"cat_q{q:02d}.cbm"))
+                models_cat[f"q{q}"] = m
+        except Exception:
+            models_cat = {}
+
+    # Tabla de routing fam → modelo
+    try:
+        routing_df = pd.read_parquet(DATA / "family_model_routing.parquet")
+        fam_routing = dict(zip(routing_df.fam, routing_df.best_model))
+        fam_routing_meta = {r.fam: r for _, r in routing_df.iterrows()}
+    except Exception:
+        fam_routing = {}
+        fam_routing_meta = {}
+
     # Locales: cve_art -> Booster
     local_bs = {}
     for f in LOCAL_DIR.glob("*.txt"):
@@ -114,7 +155,9 @@ def _load_all():
 
     _cache.update(dict(
         panel=panel, emb_cols=emb_cols, features=features, encoders=encoders,
-        models=models, local_bs=local_bs,
+        models=models, models_xgb=models_xgb, models_cat=models_cat,
+        fam_routing=fam_routing, fam_routing_meta=fam_routing_meta,
+        local_bs=local_bs,
         qsku=qsku, qfam=qfam, qglb=qglb,
         kv=kv, cross=cross, promos=promos, elas=elas,
         factor_uds=factor_uds, cred_fam=cred_fam,
@@ -204,14 +247,34 @@ def predict_demand_curve(sku: str, new_cost_unit: float,
         rows.append(r)
     df = pd.DataFrame(rows).reset_index(drop=True)
 
-    # Predicciones q10, q50, q90
-    X = df[c["features"]].values
-    yhat_q10 = c["models"]["q10"].predict(X)
-    yhat_q50 = c["models"]["q50"].predict(X)
-    yhat_q90 = c["models"]["q90"].predict(X)
+    # Selección de modelo: routing por familia (LGBM/XGB/CAT)
+    fam = base.fam
+    modelo_elegido = c["fam_routing"].get(fam, "LightGBM")
+    # Validar disponibilidad
+    if modelo_elegido == "XGBoost" and not c["models_xgb"]:
+        modelo_elegido = "LightGBM"
+    if modelo_elegido == "CatBoost" and not c["models_cat"]:
+        modelo_elegido = "LightGBM"
 
-    # Local correction si existe
-    if sku in c["local_bs"]:
+    # Predicciones q10, q50, q90 con el modelo elegido
+    X = df[c["features"]].values
+    if modelo_elegido == "XGBoost":
+        mods = c["models_xgb"]
+        yhat_q10 = mods["q10"].predict(X)
+        yhat_q50 = mods["q50"].predict(X)
+        yhat_q90 = mods["q90"].predict(X)
+    elif modelo_elegido == "CatBoost":
+        mods = c["models_cat"]
+        yhat_q10 = mods["q10"].predict(X)
+        yhat_q50 = mods["q50"].predict(X)
+        yhat_q90 = mods["q90"].predict(X)
+    else:  # LightGBM (default)
+        yhat_q10 = c["models"]["q10"].predict(X)
+        yhat_q50 = c["models"]["q50"].predict(X)
+        yhat_q90 = c["models"]["q90"].predict(X)
+
+    # Local correction (solo aplica si el modelo elegido es LGBM, fueron entrenados sobre él)
+    if modelo_elegido == "LightGBM" and sku in c["local_bs"]:
         delta = c["local_bs"][sku].predict(X)
         yhat_q50 = yhat_q50 + delta
         # nota: q10/q90 no se ajustan localmente; el conformal abajo lo arreglará
@@ -245,7 +308,7 @@ def predict_demand_curve(sku: str, new_cost_unit: float,
     weight = np.clip(weight, 1e-6, 1.0)
 
     margen_med_raw = margen_unit * qty_med
-    return pd.DataFrame({
+    out = pd.DataFrame({
         "precio": price_grid,
         "qty_med": qty_med,
         "qty_lo": qty_lo,
@@ -261,6 +324,9 @@ def predict_demand_curve(sku: str, new_cost_unit: float,
         "margen_med_penalizado": margen_med_raw * weight,  # usado para optimizar
         "ingreso_med_penalizado": price_grid * qty_med * weight,
     })
+    out.attrs["modelo_usado"] = modelo_elegido    # transparencia: qué modelo se ejecutó
+    out.attrs["fam"] = fam
+    return out
 
 
 def recommend_price(sku: str, new_cost_unit: float, objetivo: str = "margen",
@@ -302,8 +368,81 @@ def recommend_price(sku: str, new_cost_unit: float, objetivo: str = "margen",
         "delta_margen_diario": float(best.margen_med - actual_row.margen_med),
         "objetivo": objetivo,
         "conservatism": conservatism,
+        "modelo_usado": curve.attrs.get("modelo_usado", "LightGBM"),
         "curva": curve,
         "state": state,
+    }
+
+
+def validate_cost_input(sku: str, new_cost_unit: float) -> dict:
+    """Detecta si el nuevo costo está fuera del rango histórico del SKU.
+
+    Devuelve un diccionario con:
+      - is_outlier:  bool
+      - severity:    'ok' | 'warning' | 'extreme'
+      - direction:   'subida' | 'bajada' | 'normal'
+      - delta_pct:   cambio % vs costo actual
+      - pct_in_hist: posición del nuevo costo dentro del rango histórico
+                     (0=mínimo histórico, 1=máximo, <0 o >1 = fuera)
+      - message:     texto explicativo para el cliente
+    """
+    c = _load_all()
+    panel = c["panel"]
+    g = panel[panel.cve_art == sku].sort_values("fecha")
+    if len(g) == 0:
+        return {"is_outlier": True, "severity": "extreme", "direction": "normal",
+                "delta_pct": 0.0, "pct_in_hist": np.nan,
+                "message": f"SKU {sku} no encontrado en el panel."}
+
+    fac = c["factor_uds"].get(sku, 1.0)
+    # Histórico de costos unitarios
+    costos_hist = (g.costo_vigente / fac).dropna()
+    c_min  = float(costos_hist.quantile(0.05))
+    c_max  = float(costos_hist.quantile(0.95))
+    c_full_min = float(costos_hist.min())
+    c_full_max = float(costos_hist.max())
+    c_actual   = float(costos_hist.iloc[-1])
+
+    delta_pct = (new_cost_unit - c_actual) / max(c_actual, 0.01) * 100
+    direction = "subida" if delta_pct > 0.5 else ("bajada" if delta_pct < -0.5 else "normal")
+
+    # Posición relativa dentro del rango histórico
+    rango = max(c_max - c_min, 1e-6)
+    pct_in_hist = (new_cost_unit - c_min) / rango
+
+    # Severidad: extreme si totalmente fuera del histórico, warning si fuera del IQR
+    severity = "ok"
+    if new_cost_unit < c_full_min * 0.95 or new_cost_unit > c_full_max * 1.05:
+        severity = "extreme"
+    elif new_cost_unit < c_min or new_cost_unit > c_max:
+        severity = "warning"
+
+    is_outlier = severity != "ok"
+
+    if severity == "extreme":
+        msg = (f"⚠️ Costo de ${new_cost_unit:.2f} está FUERA del rango histórico "
+               f"completo (${c_full_min:.2f} – ${c_full_max:.2f}). "
+               f"Las predicciones serán extrapolaciones — usar con extrema cautela.")
+    elif severity == "warning":
+        msg = (f"⚠️ Costo de ${new_cost_unit:.2f} está fuera del rango habitual "
+               f"(${c_min:.2f} – ${c_max:.2f}, percentiles 5-95). "
+               f"Sigue dentro del rango total observado, pero es un valor inusual.")
+    else:
+        msg = (f"✓ Costo de ${new_cost_unit:.2f} dentro del rango habitual "
+               f"(${c_min:.2f} – ${c_max:.2f}). Predicciones bien soportadas.")
+
+    return {
+        "is_outlier": is_outlier,
+        "severity": severity,
+        "direction": direction,
+        "delta_pct": delta_pct,
+        "pct_in_hist": pct_in_hist,
+        "costo_actual": c_actual,
+        "costo_hist_min": c_min,
+        "costo_hist_max": c_max,
+        "costo_full_min": c_full_min,
+        "costo_full_max": c_full_max,
+        "message": msg,
     }
 
 

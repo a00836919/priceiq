@@ -44,3 +44,20 @@ env/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Frontend Next.js
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/.env.local
+
+# Logs locales
+/tmp/
+
+# Azure local config
+.azure/
+
+#graph
+graphify-out/manifest.json    # mtime-based, breaks after git clone
+graphify-out/cost.json        # local only
+graphify-out/cache/         # optional: commit for speed, skip to keep repo small

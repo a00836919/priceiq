@@ -1,0 +1,33 @@
+# Data y modelos: SE MONTAN al runtime, no se copian al imagen
+data/
+models/
+tablas_merksyst_parquet/
+
+# Carpetas de la app que no van al backend
+frontend/
+.next/
+
+# Logs y artefactos de runs
+*.log
+*.png
+catboost_info/
+
+# Git y editor
+.git/
+.gitignore
+.vscode/
+.idea/
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.venv/
+venv/
+env/
+
+# Docs (no se necesitan en el container)
+*.md
+LICENSE
