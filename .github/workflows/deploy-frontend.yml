@@ -36,9 +36,10 @@ jobs:
           # Rutas dentro del repo
           app_location: "/frontend"        # carpeta con package.json
           api_location: ""                  # sin Azure Functions API
-          output_location: ""               # Next.js maneja su propio output
+          output_location: "out"            # carpeta de Next.js static export
         env:
-          # URL pública del backend (configurada en Static Web Apps settings)
+          # URL pública del backend (debes setearla como Variable en GitHub).
+          # En build se inyecta a Next.js como NEXT_PUBLIC_API_URL.
           NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
 
   close_pull_request:

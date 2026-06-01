@@ -44,16 +44,17 @@ export function DemandChart({ rec, mode = "demand" }: {
               backgroundColor: "white", border: "1px solid #e2e8f0",
               borderRadius: "8px", fontSize: "12px", padding: "8px 12px",
             }}
-            formatter={(value: number, name: string) => {
+            formatter={((value: unknown, name: unknown) => {
               const labels: Record<string, string> = {
                 qty: "Demanda esperada",
                 margen: "Margen esperado",
                 margen_pen: "Margen ajustado",
               };
-              const v = isDemand ? formatNumber(value as number, 1) : formatMoney(value as number);
-              return [v, labels[name] || name];
-            }}
-            labelFormatter={(p) => `Precio: ${formatMoney(p as number)}`}
+              const num = typeof value === "number" ? value : 0;
+              const v = isDemand ? formatNumber(num, 1) : formatMoney(num);
+              return [v, labels[String(name)] || String(name)];
+            }) as never}
+            labelFormatter={(p) => `Precio: ${formatMoney(Number(p) || 0)}`}
           />
 
           {/* Banda verde del rango recomendado */}
