@@ -22,6 +22,11 @@ jobs:
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
+        env:
+          # URL pública del backend (configurar como Variable en GitHub:
+          # Settings → Secrets and variables → Actions → Variables tab).
+          # Next.js la inyecta al bundle del cliente en build time.
+          NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_WITTY_MEADOW_03EABC60F }}
           repo_token: ${{ secrets.GITHUB_TOKEN }} # Used for Github integrations (i.e. PR comments)
